@@ -1,1 +1,1 @@
-Super rough bindings to the [https://github.com/buserror/simavr](simavr) library from Rust.
+Super rough bindings to the [simavr](https://github.com/buserror/simavr) library from Rust.
