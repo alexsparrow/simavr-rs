@@ -1,0 +1,9 @@
+[package]
+name = "simavr"
+version = "0.1.0"
+authors = ["Alex Sparrow <alex.sparrow@cern.ch>"]
+
+[dependencies]
+libc = "0.2.0"
+va_list = "0.0.3"
+
