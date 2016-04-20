@@ -32,6 +32,14 @@ fn it_works() {
                             move |irq, value| { println!("TIMER {} {}", i, value)});
     }
 
+    //let irq = Avr::alloc_irq(0, 0, "test");
+    let ioport = Avr::ioctl_ioport_getirq('B');
+    let mut irq = avr.io_get_irq(ioport, 4);
+    avr.register_notify(&mut irq, 
+                        move |irq, value| { println!("REG {} {}", 4, value)});
+
+    irq.raise(10);
+
 
     let mut counter = 0;
     loop {

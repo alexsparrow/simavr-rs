@@ -3,11 +3,11 @@ extern crate libc;
 mod sim_avr;
 mod sim_elf;
 mod stdint;
-mod sim_irq;
 
 use std::ffi::CString;
 use std::ffi::CStr;
 use sim_avr::Struct_avr_t;
+use sim_avr::Struct_avr_irq_pool_t;
 pub use sim_avr::CPUState;
 use sim_avr::avr_run;
 use sim_elf::avr_load_firmware;
@@ -19,6 +19,9 @@ use sim_avr::Struct_avr_irq_t;
 use sim_avr::avr_irq_register_notify;
 use sim_avr::avr_io_getirq;
 use sim_avr::avr_iomem_getirq;
+use sim_avr::avr_alloc_irq;
+use sim_avr::avr_connect_irq;
+use sim_avr::avr_raise_irq;
 use std::ptr;
 use std::mem;
 
@@ -110,6 +113,23 @@ impl Avr {
             ('r' as u32) << 8 | (name as u32)
     }
 
+    pub fn alloc_irq(&mut self, index: u32, count: u32, names: &str) -> AvrIrq {
+        let mut names = CString::new(names).unwrap();
+        AvrIrq {
+            irq: unsafe {
+                avr_alloc_irq(&mut self.avr.irq_pool as *mut Struct_avr_irq_pool_t, 
+                              index, count, &mut names.as_ptr() as *mut *const i8)
+            }
+        }
+    }
+
+    pub fn connect_irq(src: &mut AvrIrq, dst: &mut AvrIrq) {
+        unsafe {
+            avr_connect_irq(src.irq, dst.irq);
+        }
+    }
+
+
 }
 
 pub struct AvrFirmware {
@@ -123,6 +143,14 @@ impl AvrFirmware {
             let mut firmware : Struct_elf_firmware_t = Default::default();
             elf_read_firmware(name.as_ptr(), &mut firmware as *mut Struct_elf_firmware_t);
             AvrFirmware { firmware: firmware }
+        }
+    }
+}
+
+impl AvrIrq {
+    pub fn raise(&mut self, value: u32) {
+        unsafe {
+            avr_raise_irq(self.irq, value)
         }
     }
 }
