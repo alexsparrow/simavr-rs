@@ -92,6 +92,11 @@ impl Avr {
         }
     }
 
+    pub fn ioport_getirq(&mut self, name: char, index: i32) -> AvrIrq {
+        let ctl = Avr::ioctl_ioport_getirq(name);
+        self.io_get_irq(ctl, index)
+    }
+
     pub fn iomem_get_irq(&mut self,  addr: u16,
                          name: &str,
                          index: i32) -> AvrIrq {
@@ -156,6 +161,12 @@ impl AvrIrq {
     pub fn raise(&mut self, value: u32) {
         unsafe {
             avr_raise_irq(self.irq, value)
+        }
+    }
+
+    pub fn name(&self) -> &str {
+        unsafe {
+            CStr::from_ptr((*self.irq).name).to_str().unwrap()
         }
     }
 }
