@@ -41,11 +41,16 @@ impl Avr {
         Avr {
             avr : unsafe {
                 let avr = sim_avr::avr_make_mcu_by_name(name.as_ptr());
-                //(*avr)._bindgen_bitfield_1_ = 1;
+
                 sim_avr::avr_init(avr);
                 *avr
             }
         }
+    }
+
+    pub fn set_trace(&mut self, trace: bool) {
+        self.avr._bindgen_bitfield_1_ = trace as u8;
+        //self.avr._bindgen_bitfield_2_ = 3 as u8;
     }
 
     pub fn load_firmware(&mut self, firmware: &mut AvrFirmware) {
