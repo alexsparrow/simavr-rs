@@ -75,8 +75,8 @@ impl Avr {
     }
 
 
-    pub fn register_notify<F>(&mut self, avr_irq: &mut AvrIrq, mut notify: F) 
-        where F: FnMut(&AvrIrq, u32) -> (), F: 'static 
+    pub fn register_notify<'a, F>(&'a mut self, avr_irq: &mut AvrIrq, mut notify: F) 
+        where F: FnMut(&AvrIrq, u32) -> (), F: 'a 
     {
         let cb: Box<Box<FnMut(&AvrIrq, u32) -> ()>> = Box::new(Box::new(notify));
         unsafe {
