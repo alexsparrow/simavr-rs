@@ -1,27 +1,26 @@
-extern crate libc;
 
-mod sim_avr;
-mod sim_elf;
-mod stdint;
+mod native;
+extern crate libc;
 
 use std::ffi::CString;
 use std::ffi::CStr;
-use sim_avr::Struct_avr_t;
-use sim_avr::Struct_avr_irq_pool_t;
-pub use sim_avr::CPUState;
-use sim_avr::avr_run;
-use sim_elf::avr_load_firmware;
-use sim_elf::Struct_elf_firmware_t;
-use sim_elf::elf_read_firmware;
 use std::default::Default;
-use sim_avr::avr_irq_notify_t;
-use sim_avr::Struct_avr_irq_t;
-use sim_avr::avr_irq_register_notify;
-use sim_avr::avr_io_getirq;
-use sim_avr::avr_iomem_getirq;
-use sim_avr::avr_alloc_irq;
-use sim_avr::avr_connect_irq;
-use sim_avr::avr_raise_irq;
+use native::sim_avr::Struct_avr_t;
+use native::sim_avr::Struct_avr_irq_pool_t;
+pub use native::sim_avr::CPUState;
+use native::sim_avr::avr_run;
+use native::sim_elf::avr_load_firmware;
+use native::sim_elf::Struct_elf_firmware_t;
+use native::sim_elf::elf_read_firmware;
+use native::sim_avr::avr_irq_notify_t;
+use native::sim_avr::Struct_avr_irq_t;
+use native::sim_avr::avr_irq_register_notify;
+use native::sim_avr::avr_io_getirq;
+use native::sim_avr::avr_iomem_getirq;
+use native::sim_avr::avr_alloc_irq;
+use native::sim_avr::avr_connect_irq;
+use native::sim_avr::avr_raise_irq;
+use native::sim_avr::{avr_make_mcu_by_name, avr_init};
 use std::ptr;
 use std::mem;
 
@@ -40,9 +39,9 @@ impl Avr {
         
         Avr {
             avr : unsafe {
-                let avr = sim_avr::avr_make_mcu_by_name(name.as_ptr());
+                let avr = avr_make_mcu_by_name(name.as_ptr());
 
-                sim_avr::avr_init(avr);
+                avr_init(avr);
                 *avr
             }
         }
@@ -66,7 +65,7 @@ impl Avr {
     }
 
     unsafe extern "C" fn notify_handler(irq: *mut Struct_avr_irq_t,
-                                 value: stdint::uint32_t,
+                                 value: u32,
                                  param: *mut ::std::os::raw::c_void) {
     let closure: &mut Box<FnMut(&AvrIrq, u32) -> ()> = unsafe { mem::transmute(param) };
         unsafe {
