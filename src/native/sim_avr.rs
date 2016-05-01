@@ -577,10 +577,10 @@ extern "C" {
     pub fn avr_ioctl(avr: *mut avr_t, ctl: uint32_t,
                      io_param: *mut ::std::os::raw::c_void)
      -> ::std::os::raw::c_int;
-    pub fn avr_io_getirq(avr: *mut avr_t, ctl: uint32_t,
+    pub fn avr_io_getirq(avr: *const avr_t, ctl: uint32_t,
                          index: ::std::os::raw::c_int)
      -> *mut Struct_avr_irq_t;
-    pub fn avr_iomem_getirq(avr: *mut avr_t, addr: avr_io_addr_t,
+    pub fn avr_iomem_getirq(avr: *const avr_t, addr: avr_io_addr_t,
                             name: *const ::std::os::raw::c_char,
                             index: ::std::os::raw::c_int) -> *mut avr_irq_t;
     pub fn avr_deallocate_ios(avr: *mut avr_t);
