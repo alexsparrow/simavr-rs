@@ -4,6 +4,8 @@ extern crate libc;
 
 use std::ffi::CString;
 use std::ffi::CStr;
+use std::ptr;
+use std::mem;
 use std::default::Default;
 use native::sim_avr::Struct_avr_t;
 use native::sim_avr::Struct_avr_irq_pool_t;
@@ -12,7 +14,6 @@ use native::sim_avr::avr_run;
 use native::sim_elf::avr_load_firmware;
 use native::sim_elf::Struct_elf_firmware_t;
 use native::sim_elf::elf_read_firmware;
-use native::sim_avr::avr_irq_notify_t;
 use native::sim_avr::Struct_avr_irq_t;
 use native::sim_avr::avr_irq_register_notify;
 use native::sim_avr::avr_io_getirq;
@@ -21,8 +22,6 @@ use native::sim_avr::avr_alloc_irq;
 use native::sim_avr::avr_connect_irq;
 use native::sim_avr::avr_raise_irq;
 use native::sim_avr::{avr_make_mcu_by_name, avr_init};
-use std::ptr;
-use std::mem;
 
 pub type Avr = Struct_avr_t;
 pub type AvrIrq = Struct_avr_irq_t;
@@ -59,14 +58,14 @@ impl Avr {
     unsafe extern "C" fn notify_handler(irq: *mut Struct_avr_irq_t,
                                  value: u32,
                                  param: *mut ::std::os::raw::c_void) {
-    let closure: &mut Box<FnMut(&AvrIrq, u32) -> ()> = unsafe { mem::transmute(param) };
+    let closure: &mut Box<FnMut(&AvrIrq, u32) -> ()> = mem::transmute(param);
         unsafe {
             closure(&*irq, value as u32);
         }
     }
 
 
-    pub fn register_notify<'a, F>(&'a self, avr_irq: &mut AvrIrq, mut notify: F) 
+    pub fn register_notify<'a, F>(&'a self, avr_irq: &mut AvrIrq, notify: F) 
         where F: FnMut(&AvrIrq, u32) -> (), F: 'a 
     {
         let cb: Box<Box<FnMut(&AvrIrq, u32) -> ()>> = Box::new(Box::new(notify));
@@ -115,7 +114,7 @@ impl Avr {
     }
 
     pub fn alloc_irq(&mut self, index: u32, count: u32, names: &str) -> &AvrIrq {
-        let mut names = CString::new(names).unwrap();
+        let names = CString::new(names).unwrap();
         unsafe {
             &* avr_alloc_irq(&mut self.irq_pool as *mut Struct_avr_irq_pool_t, 
                               index, count, &mut names.as_ptr() as *mut *const i8)
